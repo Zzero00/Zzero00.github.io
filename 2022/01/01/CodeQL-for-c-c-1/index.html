@@ -1,0 +1,207 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>CodeQL for c/c++(一)：基础查询语句 | Zzer0's Blog</title><meta name="author" content="Zzer0"><meta name="copyright" content="Zzer0"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前言本章其实主要是codeQL官方c&#x2F;c++文档的翻译： CodeQL官方c&#x2F;c++文档(https:&#x2F;&#x2F;codeql.github.com&#x2F;docs&#x2F;codeql-language-guides&#x2F;codeql-for-cpp&#x2F;) 关于本次搜索我们将要运行的查询的目的为，对冗余 的if 语句的代码执行基本搜索，因为它们有一个空的 then 分支。 例如，代码如： 1if (error) &amp;#123">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CodeQL for c&#x2F;c++(一)：基础查询语句">
+<meta property="og:url" content="http://example.com/2022/01/01/CodeQL-for-c-c-1/index.html">
+<meta property="og:site_name" content="Zzer0&#39;s Blog">
+<meta property="og:description" content="前言本章其实主要是codeQL官方c&#x2F;c++文档的翻译： CodeQL官方c&#x2F;c++文档(https:&#x2F;&#x2F;codeql.github.com&#x2F;docs&#x2F;codeql-language-guides&#x2F;codeql-for-cpp&#x2F;) 关于本次搜索我们将要运行的查询的目的为，对冗余 的if 语句的代码执行基本搜索，因为它们有一个空的 then 分支。 例如，代码如： 1if (error) &amp;#123">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg">
+<meta property="article:published_time" content="2022-01-01T07:41:11.000Z">
+<meta property="article:modified_time" content="2022-01-01T07:48:06.000Z">
+<meta property="article:author" content="Zzer0">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2022/01/01/CodeQL-for-c-c-1/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'CodeQL for c/c++(一)：基础查询语句',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-01-01 07:48:06'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.0.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/dimo.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data is-center"><div class="data-item"><a href="/archives/"><div class="headline">文章</div><div class="length-num">2</div></a></div><div class="data-item"><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a></div><div class="data-item"><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Zzer0's Blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">CodeQL for c/c++(一)：基础查询语句</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-01-01T07:41:11.000Z" title="发表于 2022-01-01 07:41:11">2022-01-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-01-01T07:48:06.000Z" title="更新于 2022-01-01 07:48:06">2022-01-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/CodeQL/">CodeQL</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="CodeQL for c/c++(一)：基础查询语句"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>本章其实主要是codeQL官方c/c++文档的翻译：</p>
+<p><a href="">CodeQL官方c/c++文档</a>(<a target="_blank" rel="noopener" href="https://codeql.github.com/docs/codeql-language-guides/codeql-for-cpp/">https://codeql.github.com/docs/codeql-language-guides/codeql-for-cpp/</a>)</p>
+<h1 id="关于本次搜索"><a href="#关于本次搜索" class="headerlink" title="关于本次搜索"></a>关于本次搜索</h1><p>我们将要运行的查询的目的为，对冗余 的if 语句的代码执行基本搜索，因为它们有一个空的 then 分支。 例如，代码如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (error) &#123; &#125;</span><br></pre></td></tr></table></figure>
+
+<p>即，if判断之后并未执行任何操作，即可被认定为我们的冗余语句</p>
+<h1 id="使用步骤"><a href="#使用步骤" class="headerlink" title="使用步骤"></a>使用步骤</h1><p>在搜索之前，本次使用在线的搜索项目lgtm：</p>
+<p>使用该平台的步骤为：</p>
+<p>1.搜索并选择想要查询的项目</p>
+<p>2.单击查询此项目</p>
+<p>3.这将打开查询控制台</p>
+<p>4.输入查询语句</p>
+<p>5.点击运行，即可得到结果</p>
+<h1 id="查询语句解释"><a href="#查询语句解释" class="headerlink" title="查询语句解释"></a>查询语句解释</h1><p>本次使用到的查询语句为：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">import cpp</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> IfStmt ifstmt, Block block</span><br><span class="line"><span class="keyword">where</span> ifstmt.getThen() <span class="operator">=</span> block <span class="keyword">and</span></span><br><span class="line">  block.getNumStmt() <span class="operator">=</span> <span class="number">0</span></span><br><span class="line"><span class="keyword">select</span> ifstmt, &quot;This &#x27;if&#x27; statement is redundant.&quot;</span><br></pre></td></tr></table></figure>
+
+<p>运行之后，查询结果类似以下所示：</p>
+<p><img src="CodeQL-for-c-c-1/image.png" alt="img"></p>
+<p>这里找到了219个结果，点进去就可以看到源代码</p>
+<p><img src="CodeQL-for-c-c-1/image-1641023214204.png" alt="img"></p>
+<p>发现确实是if判断之后无任何处理语句</p>
+<p>那么，这段简单的查询语句各自代表着什么样的含义呢？</p>
+<p>如下所示</p>
+<table>
+<thead>
+<tr>
+<th>QL语句</th>
+<th>目的</th>
+<th>细节</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>import cpp</code></td>
+<td>导入 C/C++ 的标准 CodeQL 库</td>
+<td>每个查询都以一个或多个导入语句开始</td>
+</tr>
+<tr>
+<td><code>from IfStmt ifstmt, Block block</code></td>
+<td>定义查询的变量。 声明的形式为：<code> </code></td>
+<td>if 语句的 IfStmt 变量<br>block语句的Block变量</td>
+</tr>
+<tr>
+<td><code>where ifstmt.getThen() = block and block.getNumStmt() = 0</code></td>
+<td>定义限制变量的条件</td>
+<td>ifstmt.getThen() = block 关联两个变量。 <strong>该块必须是 if 语句的 then 分支</strong><br>block.getNumStmt() = 0 表示<strong>该块必须为空（即，它不包含任何语句）</strong></td>
+</tr>
+<tr>
+<td><code>select ifstmt, &quot;This &#39;if&#39; statement is redundant.&quot;</code></td>
+<td>定义要为每个匹配报告的内容，用于查询的 select 语句始终采用以下形式：<code>select , &quot;&quot;</code></td>
+<td>使用解释问题的字符串报告生成的 if 语句</td>
+</tr>
+</tbody></table>
+<h1 id="结果改进"><a href="#结果改进" class="headerlink" title="结果改进"></a>结果改进</h1><p>浏览我们基本查询的结果，发现它可以改进</p>
+<p>在结果中，你可能会找到带有 else 分支的 if 语句示例，其中实际上是空的 then 分支起到了作用。 例如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (...) &#123;</span><br><span class="line">  ...</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (!<span class="built_in">strcmp</span>(option, <span class="string">&quot;-verbose&quot;</span>) &#123;</span><br><span class="line">  <span class="comment">// nothing to do - handled earlier</span></span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  error(<span class="string">&quot;unrecognized option&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这种情况下，将带有空 then 分支的 if 语句标识为冗余是误报。对此的一种解决方案是修改QL语句，在 if 语句具有 else 分支时忽略空</p>
+<p>要排除具有 else 分支的 if 语句，可以做如下修改：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">where</span> ifstmt.getThen() <span class="operator">=</span> block <span class="keyword">and</span></span><br><span class="line">  block.getNumStmt() <span class="operator">=</span> <span class="number">0</span> <span class="keyword">and</span></span><br><span class="line">  <span class="keyword">not</span> ifstmt.hasElse()<span class="operator">/</span><span class="operator">/</span>没有<span class="keyword">else</span>分支</span><br></pre></td></tr></table></figure>
+
+<p>再次查询会发现只剩下一个结果了：</p>
+<p><img src="CodeQL-for-c-c-1/image-1641023262629.png" alt="img"></p>
+<p>即同时满足if为空分支且不带有else分支</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">Zzer0</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2022/01/01/CodeQL-for-c-c-1/">http://example.com/2022/01/01/CodeQL-for-c-c-1/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">Zzer0's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2022/01/01/hello-world/"><img class="next-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Hello World</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/dimo.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Zzer0</div><div class="author-info__description"></div></div><div class="card-info-data is-center"><div class="card-info-data-item"><a href="/archives/"><div class="headline">文章</div><div class="length-num">2</div></a></div><div class="card-info-data-item"><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a></div><div class="card-info-data-item"><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Zzero00"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">如有错误，请多指教</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E6%9C%AC%E6%AC%A1%E6%90%9C%E7%B4%A2"><span class="toc-number">2.</span> <span class="toc-text">关于本次搜索</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E6%AD%A5%E9%AA%A4"><span class="toc-number">3.</span> <span class="toc-text">使用步骤</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E8%AF%AD%E5%8F%A5%E8%A7%A3%E9%87%8A"><span class="toc-number">4.</span> <span class="toc-text">查询语句解释</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%BB%93%E6%9E%9C%E6%94%B9%E8%BF%9B"><span class="toc-number">5.</span> <span class="toc-text">结果改进</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/01/01/CodeQL-for-c-c-1/" title="CodeQL for c/c++(一)：基础查询语句"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="CodeQL for c/c++(一)：基础查询语句"/></a><div class="content"><a class="title" href="/2022/01/01/CodeQL-for-c-c-1/" title="CodeQL for c/c++(一)：基础查询语句">CodeQL for c/c++(一)：基础查询语句</a><time datetime="2022-01-01T07:41:11.000Z" title="发表于 2022-01-01 07:41:11">2022-01-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/01/hello-world/" title="Hello World"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hello World"/></a><div class="content"><a class="title" href="/2022/01/01/hello-world/" title="Hello World">Hello World</a><time datetime="2022-01-01T05:45:17.306Z" title="发表于 2022-01-01 05:45:17">2022-01-01</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By Zzer0</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
