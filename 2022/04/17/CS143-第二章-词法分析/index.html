@@ -1,0 +1,307 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>CS143: 第二章-词法分析 | Zzer0's Blog</title><meta name="author" content="Zzer0"><meta name="copyright" content="Zzer0"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="词法分析小例子1234if (i &#x3D;&#x3D; j)    z &#x3D; 0;else    z &#x3D; 1;  如上，词法分析需要将其转换成token（词法单元），例如关键字if，else，变量i，j，z，关系运算符&#x3D;&#x3D; 对于词法分析器来说，这段代码是以下这样一个线性字符串： 1\tif (i &#x3D;&#x3D; j)\n\tz &#x3D; 0;\n\telse\n\t\tz &#x3D; 1;  词法分析器将对此字符串进行切割和划分，根据不同">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143: 第二章-词法分析">
+<meta property="og:url" content="http://example.com/2022/04/17/CS143-%E7%AC%AC%E4%BA%8C%E7%AB%A0-%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="Zzer0&#39;s Blog">
+<meta property="og:description" content="词法分析小例子1234if (i &#x3D;&#x3D; j)    z &#x3D; 0;else    z &#x3D; 1;  如上，词法分析需要将其转换成token（词法单元），例如关键字if，else，变量i，j，z，关系运算符&#x3D;&#x3D; 对于词法分析器来说，这段代码是以下这样一个线性字符串： 1\tif (i &#x3D;&#x3D; j)\n\tz &#x3D; 0;\n\telse\n\t\tz &#x3D; 1;  词法分析器将对此字符串进行切割和划分，根据不同">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg">
+<meta property="article:published_time" content="2022-04-17T07:16:51.000Z">
+<meta property="article:modified_time" content="2022-04-17T07:37:46.000Z">
+<meta property="article:author" content="Zzer0">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2022/04/17/CS143-%E7%AC%AC%E4%BA%8C%E7%AB%A0-%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'CS143: 第二章-词法分析',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-04-17 07:37:46'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.0.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/dimo.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data is-center"><div class="data-item"><a href="/archives/"><div class="headline">文章</div><div class="length-num">20</div></a></div><div class="data-item"><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a></div><div class="data-item"><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Zzer0's Blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">CS143: 第二章-词法分析</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-04-17T07:16:51.000Z" title="发表于 2022-04-17 07:16:51">2022-04-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-04-17T07:37:46.000Z" title="更新于 2022-04-17 07:37:46">2022-04-17</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%BC%96%E8%AF%91%E5%8E%9F%E7%90%86/">编译原理</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="CS143: 第二章-词法分析"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><h1 id="词法分析"><a href="#词法分析" class="headerlink" title="词法分析"></a>词法分析</h1><h2 id="小例子"><a href="#小例子" class="headerlink" title="小例子"></a>小例子</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (i == j)</span><br><span class="line">    z = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    z = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<p>如上，词法分析需要将其转换成token（词法单元），例如关键字if，else，变量i，j，z，关系运算符==</p>
+<p>对于词法分析器来说，这段代码是以下这样一个线性字符串：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\tif (i == j)\n\tz = 0;\n\telse\n\t\tz = 1;</span><br></pre></td></tr></table></figure>
+
+<p>词法分析器将对此字符串进行切割和划分，根据不同字符串元素作用进行分类</p>
+<h2 id="符号"><a href="#符号" class="headerlink" title="符号"></a>符号</h2><p>在日常语言中，分为动词，名词，形容词……</p>
+<p>在编程语言中，分为关键字，数字，标识符……</p>
+<ul>
+<li>标识符（Identifier）：以字母开头的字母或数字字符串</li>
+<li>整数（Integer）：非空数字字符串</li>
+<li>关键字（Keyword）：if，else，begin</li>
+<li>空白（Whitespace）：空格换行制表符</li>
+</ul>
+<h2 id="工作过程"><a href="#工作过程" class="headerlink" title="工作过程"></a>工作过程</h2><p>总结来说，词法分析的工作过程如下所示：</p>
+<p><img src="https://s2.loli.net/2022/04/17/US7cCBkfribGE5h.png" alt="image.png"></p>
+<p>词法分析器会对输入的字符串进行切割和分类，给子字符串(substring)赋予标记类(class)，然后将&lt;class, substring&gt;的序列对传给语法分析器，其中，&lt;class, substring&gt;就称为token(词法单元)</p>
+<p>例如，<code>&quot;foo = 42&quot;</code>的处理结果即为：</p>
+<ul>
+<li>&lt;Identifier, “foo”&gt;</li>
+<li>&lt;Operator, “=”&gt;</li>
+<li>&lt;Integer, “42”&gt;</li>
+</ul>
+<h2 id="词法分析中的歧义问题"><a href="#词法分析中的歧义问题" class="headerlink" title="词法分析中的歧义问题"></a>词法分析中的歧义问题</h2><p>有时，词法分析从左往右分析是不够的，可能会存在歧义，例如如何确定<code>&quot;==&quot;</code>是<code>&quot;==&quot;</code>而不是<code>&quot;=&quot;</code>？</p>
+<p>因此，有时需要看后面，从后往前看才能确定</p>
+<p>而这无疑会增加词法分析工作的复杂性，因此尽量减少从后向前看的内容也是词法分析器的一个目标</p>
+<p>再例如，c++中就有stream input和嵌套模板之间的语法冲突：</p>
+<p><img src="https://s2.loli.net/2022/04/17/jEmrXgJKuqpVyk6.png" alt="image.png"></p>
+<p>一个解决方案就是在嵌套模板的”&gt;&gt;”处加空格予以区分</p>
+<h1 id="正则语言"><a href="#正则语言" class="headerlink" title="正则语言"></a>正则语言</h1><h2 id="正则表达式"><a href="#正则表达式" class="headerlink" title="正则表达式"></a>正则表达式</h2><p>正则表达式表示一个集合</p>
+<ul>
+<li>单个字符</li>
+</ul>
+<p><img src="https://s2.loli.net/2022/04/17/cd6KCfVs1oYhBHG.png" alt="image.png"></p>
+<ul>
+<li>epsilon</li>
+</ul>
+<p><img src="https://s2.loli.net/2022/04/17/sOvlGPS7g4kwDaX.png" alt="image.png"></p>
+<ul>
+<li>并集（Union）</li>
+</ul>
+<p><img src="https://s2.loli.net/2022/04/17/jXtZSOdU9kfb5sq.png" alt="image.png"></p>
+<ul>
+<li>级联（concatenation）</li>
+</ul>
+<p><img src="https://s2.loli.net/2022/04/17/MuZ9AVomcFyY5pi.png" alt="image.png"></p>
+<ul>
+<li>迭代（Iteration）</li>
+</ul>
+<p><img src="https://s2.loli.net/2022/04/17/ewgVuGpyrOv5KWs.png" alt="image.png"></p>
+<ul>
+<li>补充</li>
+</ul>
+<p><img src="https://s2.loli.net/2022/04/17/NKB3g1wbamUSIcG.png" alt="image.png"></p>
+<h1 id="形式语言"><a href="#形式语言" class="headerlink" title="形式语言"></a>形式语言</h1><p>正则表达式就是一种形式语言</p>
+<p>定义：令Σ是一组字符（字母）的集合，关于Σ的语言是由Σ中字符构成的字符串的集合</p>
+<p>例：</p>
+<ul>
+<li>英文字母-句子</li>
+<li>ASCII-C语言</li>
+</ul>
+<p>当英文字母被赋予<strong>规则</strong>，字母集合组成句子，这就是形式语言</p>
+<p>我们用一个函数L来表示字符集在语言中对应的含义，如下：</p>
+<p><img src="https://s2.loli.net/2022/04/17/qaZsMGmb7d6H4wQ.png" alt="image.png"></p>
+<p>表示语法，如正则表达式，到语义（集合）的映射</p>
+<p>关于这种映射的用处，例如在优化时，不同的语法可能含有相同的语义</p>
+<h1 id="词法规范"><a href="#词法规范" class="headerlink" title="词法规范"></a>词法规范</h1><h3 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h3><ul>
+<li>整数（Integer）</li>
+</ul>
+<p>如果用digits来表示0123456789的集合：</p>
+<p><img src="https://s2.loli.net/2022/04/17/ojf41sGXxaRegBI.png" alt="image.png"></p>
+<p>那么整数就表达为：</p>
+<p><img src="https://s2.loli.net/2022/04/17/PFsgZuzUpTtRS5h.png" alt="image.png"></p>
+<ul>
+<li>标识符（Identifier）</li>
+</ul>
+<p>标识符通常以字母开头，可包含字母、数字</p>
+<p>将字母记为：</p>
+<p><img src="https://s2.loli.net/2022/04/17/DC23pGFulBL9U6I.png" alt="image.png"></p>
+<p>则标识符可以这样表示：</p>
+<p><img src="https://s2.loli.net/2022/04/17/lYZ1pqrnwTxBONA.png" alt="image.png"></p>
+<ul>
+<li>空白</li>
+</ul>
+<p><img src="https://s2.loli.net/2022/04/17/8HCRDBg6QA1swnt.png" alt="image.png"></p>
+<h2 id="构造过程"><a href="#构造过程" class="headerlink" title="构造过程"></a>构造过程</h2><ul>
+<li>为每个符号写一个rexp：</li>
+</ul>
+<p><img src="https://s2.loli.net/2022/04/17/lyqEX3Jz9chpxKZ.png" alt="image.png"></p>
+<ul>
+<li>构建一个能够匹配所有词法单元的正则表达式</li>
+</ul>
+<p><img src="https://s2.loli.net/2022/04/17/bOJD3BCmqz2FpWZ.png" alt="image.png"></p>
+<ul>
+<li>假设输入，进行判断</li>
+</ul>
+<p><img src="https://s2.loli.net/2022/04/17/Xj64fPMSzDCxFYW.png" alt="image.png"></p>
+<ul>
+<li>如果成功，我们知道：</li>
+</ul>
+<p><img src="https://s2.loli.net/2022/04/17/mJVuPtdWyDwhCTz.png" alt="image.png"></p>
+<ul>
+<li>失败，从输入中删除x1…xi，返回步骤(3)</li>
+</ul>
+<p>关于该步骤的一些疑问：</p>
+<ul>
+<li>使用多少输入？</li>
+</ul>
+<p>最长匹配，例如对于”==”选择”==”而非”=”</p>
+<ul>
+<li>如果匹配到多个词法单元，该选择哪一个？</li>
+</ul>
+<p>例如，”if”既符合Keywords也符合Identifier，这时候应该优先调度，优先选择第一个列出的标记类，Keywords</p>
+<ul>
+<li>如果没有规则匹配？</li>
+</ul>
+<p>针对不规范字符，编写一类错误字符串：</p>
+<p><img src="https://s2.loli.net/2022/04/17/XVzOwoNajZh7BFK.png" alt="image.png"></p>
+<p>优先级最低</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">Zzer0</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2022/04/17/CS143-%E7%AC%AC%E4%BA%8C%E7%AB%A0-%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90/">http://example.com/2022/04/17/CS143-%E7%AC%AC%E4%BA%8C%E7%AB%A0-%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">Zzer0's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2022/04/17/CS143-%E7%AC%AC%E4%B8%80%E7%AB%A0/"><img class="next-cover" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">CS143: 第一章</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/dimo.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Zzer0</div><div class="author-info__description"></div></div><div class="card-info-data is-center"><div class="card-info-data-item"><a href="/archives/"><div class="headline">文章</div><div class="length-num">20</div></a></div><div class="card-info-data-item"><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a></div><div class="card-info-data-item"><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Zzero00"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">如有错误，请多指教</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">词法分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E4%BE%8B%E5%AD%90"><span class="toc-number">1.1.</span> <span class="toc-text">小例子</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%A6%E5%8F%B7"><span class="toc-number">1.2.</span> <span class="toc-text">符号</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E8%BF%87%E7%A8%8B"><span class="toc-number">1.3.</span> <span class="toc-text">工作过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90%E4%B8%AD%E7%9A%84%E6%AD%A7%E4%B9%89%E9%97%AE%E9%A2%98"><span class="toc-number">1.4.</span> <span class="toc-text">词法分析中的歧义问题</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%AD%A3%E5%88%99%E8%AF%AD%E8%A8%80"><span class="toc-number">2.</span> <span class="toc-text">正则语言</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-number">2.1.</span> <span class="toc-text">正则表达式</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%BD%A2%E5%BC%8F%E8%AF%AD%E8%A8%80"><span class="toc-number">3.</span> <span class="toc-text">形式语言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AF%8D%E6%B3%95%E8%A7%84%E8%8C%83"><span class="toc-number">4.</span> <span class="toc-text">词法规范</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E5%AD%90"><span class="toc-number">4.0.1.</span> <span class="toc-text">例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E8%BF%87%E7%A8%8B"><span class="toc-number">4.1.</span> <span class="toc-text">构造过程</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/04/17/CS143-%E7%AC%AC%E4%BA%8C%E7%AB%A0-%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90/" title="CS143: 第二章-词法分析"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="CS143: 第二章-词法分析"/></a><div class="content"><a class="title" href="/2022/04/17/CS143-%E7%AC%AC%E4%BA%8C%E7%AB%A0-%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90/" title="CS143: 第二章-词法分析">CS143: 第二章-词法分析</a><time datetime="2022-04-17T07:16:51.000Z" title="发表于 2022-04-17 07:16:51">2022-04-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/17/CS143-%E7%AC%AC%E4%B8%80%E7%AB%A0/" title="CS143: 第一章"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="CS143: 第一章"/></a><div class="content"><a class="title" href="/2022/04/17/CS143-%E7%AC%AC%E4%B8%80%E7%AB%A0/" title="CS143: 第一章">CS143: 第一章</a><time datetime="2022-04-17T06:51:09.000Z" title="发表于 2022-04-17 06:51:09">2022-04-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/02/13/Linux-kernel-protect-2/" title="Linux内核：保护模式进阶"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux内核：保护模式进阶"/></a><div class="content"><a class="title" href="/2022/02/13/Linux-kernel-protect-2/" title="Linux内核：保护模式进阶">Linux内核：保护模式进阶</a><time datetime="2022-02-13T16:14:13.000Z" title="发表于 2022-02-13 16:14:13">2022-02-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/02/05/Linux-kernel-protect-1/" title="Linux内核：保护模式初级"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Linux内核：保护模式初级"/></a><div class="content"><a class="title" href="/2022/02/05/Linux-kernel-protect-1/" title="Linux内核：保护模式初级">Linux内核：保护模式初级</a><time datetime="2022-02-05T15:03:55.000Z" title="发表于 2022-02-05 15:03:55">2022-02-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/01/27/CodeQL-U-Boot-for-C-C/" title="CodeQL U-Boot for C/C++"><img src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/img/default.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="CodeQL U-Boot for C/C++"/></a><div class="content"><a class="title" href="/2022/01/27/CodeQL-U-Boot-for-C-C/" title="CodeQL U-Boot for C/C++">CodeQL U-Boot for C/C++</a><time datetime="2022-01-27T17:24:26.000Z" title="发表于 2022-01-27 17:24:26">2022-01-27</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By Zzer0</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><div class="js-pjax"><script>function addGitalkSource () {
+  const ele = document.createElement('link')
+  ele.rel = 'stylesheet'
+  ele.href= 'https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css'
+  document.getElementsByTagName('head')[0].appendChild(ele)
+}
+
+function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk(Object.assign({
+      clientID: '300bca8588d1f9350614',
+      clientSecret: '49daaf392942e2e8348490fe0fe2d54575c4161a',
+      repo: 'Zzero00.github.io',
+      owner: 'Zzero00',
+      admin: ['Zzero00'],
+      id: '730081c37664dbdb2e82829f85cedb93',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    addGitalkSource()
+    getScript('https://cdn.jsdelivr.net/npm/gitalk@latest/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.innerHTML= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !true) {
+  if (true) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
